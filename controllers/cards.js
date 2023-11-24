@@ -31,7 +31,10 @@ function deleteCard(req, res) {
       return res.send({ data: card });
     })
     .catch((err) => {
-      res.status(500).send({ message: 'Ошибка сервера.' });
+      if (err.name === 'ValidationError') {
+        return res.status(400).send({ message: err.message });
+      }
+      return res.status(500).send({ message: 'Ошибка сервера.' });
     });
 }
 
