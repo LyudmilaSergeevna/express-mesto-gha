@@ -30,7 +30,12 @@ function deleteCard(req, res) {
       }
       return res.send({ data: card });
     })
-    .catch((err) => res.status(400).send({ message: 'Ошибка сервера.' }));
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        return res.status(400).send({ message: err.message });
+      }
+      return res.status(400).send({ message: 'Ошибка сервера.' });
+    });
 }
 
 function likeCard(req, res) {
@@ -46,7 +51,7 @@ function likeCard(req, res) {
       return res.send({ data: card });
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
+      if (err.name === 'CastError') {
         return res.status(400).send({ message: err.message });
       }
       return res.status(500).send({ message: 'Ошибка сервера.' });
@@ -66,7 +71,7 @@ function dislikeCard(req, res) {
       return res.send({ data: card });
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
+      if (err.name === 'CastError') {
         return res.status(400).send({ message: err.message });
       }
       return res.status(500).send({ message: 'Ошибка сервера.' });
