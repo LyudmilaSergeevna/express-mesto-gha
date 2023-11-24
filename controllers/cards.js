@@ -26,7 +26,7 @@ function deleteCard(req, res) {
   cardModel.findByIdAndDelete(cardId)
     .then((card) => {
       if (!card) {
-        return res.status(400).send({ message: 'Карточка с указанным _id не найдена.' });
+        return res.status(404).send({ message: 'Карточка с указанным _id не найдена.' });
       }
       return res.send({ data: card });
     })
@@ -34,7 +34,7 @@ function deleteCard(req, res) {
       if (err.name === 'CastError') {
         return res.status(400).send({ message: err.message });
       }
-      return res.status(400).send({ message: 'Ошибка сервера.' });
+      return res.status(500).send({ message: 'Ошибка сервера.' });
     });
 }
 
