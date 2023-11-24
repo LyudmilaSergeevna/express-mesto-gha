@@ -9,9 +9,10 @@ function readAllCards(req, res) {
 
 function createCard(req, res) {
   const { name, link } = req.body;
-  cardModel.create({ name, link, owner: req.user._id })
+  return cardModel.create({ name, link, owner: req.user._id })
+    // eslint-disable-next-line arrow-body-style
     .then((card) => {
-      res.send({ data: card });
+      return res.status(201).send({ data: card });
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {

@@ -26,9 +26,10 @@ function readUser(req, res) {
 
 function createUser(req, res) {
   const { name, about, avatar } = req.body;
-  userModel.create({ name, about, avatar })
+  return userModel.create({ name, about, avatar })
+    // eslint-disable-next-line arrow-body-style
     .then((user) => {
-      res.send({ data: user });
+      return res.status(201).send({ data: user });
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
