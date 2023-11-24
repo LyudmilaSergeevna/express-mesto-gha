@@ -30,7 +30,7 @@ function deleteCard(req, res) {
       }
       return res.send({ data: card });
     })
-    .catch((err) => res.status(500).send({ message: 'Ошибка сервера.' }));
+    .catch((err) => res.status(400).send({ message: 'Ошибка сервера.' }));
 }
 
 function likeCard(req, res) {
