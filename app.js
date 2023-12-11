@@ -10,6 +10,7 @@ const userRouter = require('./routes/users');
 const cardRouter = require('./routes/cards');
 const { login, createUser } = require('./controllers/users');
 const auth = require('./middlewares/auth');
+const NotFoundError = require('./errors/NotFoundError');
 
 const { PORT = 3000 } = process.env;
 
@@ -22,7 +23,7 @@ app.use(express.json());
 app.post('/signin', celebrate({
   body: Joi.object().keys({
     email: Joi.string().required().email(),
-    password: Joi.string().required().min(6),
+    password: Joi.string().required(),
   }),
 }), login);
 app.post('/signup', celebrate({
@@ -30,9 +31,9 @@ app.post('/signup', celebrate({
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
     // eslint-disable-next-line no-useless-escape
-    avatar: Joi.string().pattern(/(^https?:\/\/)?([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}[^\/\s]+$/i),
+    avatar: Joi.string().pattern(/^(https?:\/\/)?([a-z0-9]+(-[a-z0-9]+)*\.)[^\s@]*$/i),
     email: Joi.string().required().email(),
-    password: Joi.string().required().min(6),
+    password: Joi.string().required(),
   }),
 }), createUser);
 
@@ -40,8 +41,8 @@ app.use(auth);
 
 app.use('/users', userRouter);
 app.use('/cards', cardRouter);
-app.use('/', (req, res) => {
-  res.status(404).send({ message: 'Такой страницы не существует' });
+app.use('/', (req, res, next) => {
+  next(new NotFoundError('Такой страницы не существует'));
 });
 
 app.use(errors());

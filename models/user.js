@@ -27,7 +27,7 @@ const userSchema = new mongoose.Schema({
       // eslint-disable-next-line object-shorthand, func-names
       validator: function (link) {
         // eslint-disable-next-line no-useless-escape
-        return /(^https?:\/\/)?([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}[^\/\s]+$/i.test(link);
+        return /^(https?:\/\/)?([a-z0-9]+(-[a-z0-9]+)*\.)[^\s@]*$/i.test(link);
       },
       message: (props) => `${props.value} is not a valid link!`,
     },
@@ -40,7 +40,6 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: true,
-    minlength: 6,
     select: false,
   },
 });

@@ -24,6 +24,7 @@ function readTheUser(req, res, next) {
     .catch((err) => {
       if (err.name === 'CastError') {
         next(new BadRequestError({ message: err.message }));
+        return;
       }
       next(err);
     });
@@ -49,6 +50,7 @@ function readUser(req, res, next) {
     .catch((err) => {
       if (err.name === 'CastError') {
         next(new BadRequestError({ message: err.message }));
+        return;
       }
       next(err);
     });
@@ -67,8 +69,10 @@ function createUser(req, res, next) {
     .catch((err) => {
       if (err.name === 'ValidationError') {
         next(new BadRequestError({ message: err.message }));
+        return;
       } if (err.name === 'MongoServerError') {
         next(new ConflictError('Пользователь с таким email уже зарегистрирован.'));
+        return;
       }
       next(err);
     });
@@ -86,6 +90,7 @@ function updateUser(req, res, next) {
     .catch((err) => {
       if (err.name === 'ValidationError') {
         next(new BadRequestError({ message: err.message }));
+        return;
       }
       next(err);
     });
@@ -103,6 +108,7 @@ function updateUserAvatar(req, res, next) {
     .catch((err) => {
       if (err.name === 'ValidationError') {
         next(new BadRequestError({ message: err.message }));
+        return;
       }
       next(err);
     });

@@ -16,6 +16,7 @@ function readTheCard(req, res, next) {
     .catch((err) => {
       if (err.name === 'CastError') {
         next(new BadRequestError({ message: err.message }));
+        return;
       }
       next(err);
     });
@@ -41,6 +42,7 @@ function createCard(req, res, next) {
     .catch((err) => {
       if (err.name === 'ValidationError') {
         next(new BadRequestError({ message: err.message }));
+        return;
       }
       next(err);
     });
@@ -65,6 +67,7 @@ function deleteCard(req, res, next) {
     .catch((err) => {
       if (err.name === 'CastError') {
         next(new BadRequestError({ message: err.message }));
+        return;
       }
       next(err);
     });
@@ -85,6 +88,7 @@ function likeCard(req, res, next) {
     .catch((err) => {
       if (err.name === 'CastError') {
         next(new BadRequestError({ message: err.message }));
+        return;
       }
       next(err);
     });
@@ -105,6 +109,7 @@ function dislikeCard(req, res, next) {
     .catch((err) => {
       if (err.name === 'CastError') {
         next(new BadRequestError({ message: err.message }));
+        return;
       }
       next(err);
     });

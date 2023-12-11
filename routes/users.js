@@ -30,7 +30,7 @@ router.patch('/me/avatar', celebrate({
   }),
   body: Joi.object().keys({
     // eslint-disable-next-line no-useless-escape
-    avatar: Joi.string().pattern(/(^https?:\/\/)?([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}[^\/\s]+$/i),
+    avatar: Joi.string().pattern(/^(https?:\/\/)?([a-z0-9]+(-[a-z0-9]+)*\.)[^\s@]*$/i),
   }),
 }), userController.updateUserAvatar);
 
