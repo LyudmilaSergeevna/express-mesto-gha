@@ -1,76 +1,108 @@
+/* eslint-disable import/no-extraneous-dependencies */
+/* eslint-disable object-curly-newline */
 /* eslint-disable no-unused-vars */
-const userModel = require('../models/user');
+require('dotenv').config();
 
-function readAllUsers(req, res) {
+const { NODE_ENV, JWT_SECRET } = process.env;
+const validator = require('validator');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const userModel = require('../models/user');
+const NotFoundError = require('../errors/NotFoundError');
+const BadRequestError = require('../errors/BadRequestError');
+const ConflictError = require('../errors/ConflictError');
+const UnauthorizedAccessError = require('../errors/UnauthorizedAccessError');
+
+function readAllUsers(req, res, next) {
+  const userId = req.user._id;
+  if (!userId) {
+    throw new UnauthorizedAccessError('Необходима авторизация.');
+  }
   return userModel.find()
     .then((users) => res.send(users))
-    .catch((err) => res.status(500).send({ message: 'Ошибка сервера.' }));
+    .catch(next);
 }
 
-function readUser(req, res) {
-  const { userId } = req.params;
+function readUser(req, res, next) {
+  const userId = req.user._id;
   return userModel.findById(userId)
     .then((user) => {
       if (!user) {
-        return res.status(404).send({ message: 'Пользователь по указанному _id не найден.' });
+        throw new NotFoundError('Пользователь по указанному _id не найден.');
       }
       return res.send(user);
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        return res.status(400).send({ message: err.message });
+        next(new BadRequestError({ message: err.message }));
       }
-      return res.status(500).send({ message: 'Ошибка сервера.' });
+      next(err);
     });
 }
 
-function createUser(req, res) {
-  const { name, about, avatar } = req.body;
-  return userModel.create({ name, about, avatar })
-    // eslint-disable-next-line arrow-body-style
+function createUser(req, res, next) {
+  const { name, about, avatar, email, password } = req.body;
+  bcrypt.hash(password, 10)
+    .then((hash) => userModel.create({ name, about, avatar, email, password: hash }))
     .then((user) => {
+      if (validator.isEmail(email) === false) {
+        throw new BadRequestError('Указан неверный email.');
+      }
       return res.status(201).send({ data: user });
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        return res.status(400).send({ message: err.message });
+        next(new BadRequestError({ message: err.message }));
+      } if (err.name === 'MongoServerError') {
+        next(new ConflictError('Пользователь с таким email уже зарегистрирован.'));
       }
-      return res.status(500).send({ message: 'Ошибка сервера.' });
+      next(err);
     });
 }
 
-function updateUser(req, res) {
+function updateUser(req, res, next) {
   // eslint-disable-next-line max-len
   userModel.findByIdAndUpdate(req.user._id, { name: req.body.name, about: req.body.about }, { new: true, runValidators: true, upsert: false })
     .then((user) => {
       if (!user) {
-        return res.status(404).send({ message: 'Пользователь по указанному _id не найден.' });
+        throw new NotFoundError('Пользователь по указанному _id не найден.');
       }
       return res.send({ data: user });
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        return res.status(400).send({ message: err.message });
+        next(new BadRequestError({ message: err.message }));
       }
-      return res.status(500).send({ message: 'Ошибка сервера.' });
+      next(err);
     });
 }
 
-function updateUserAvatar(req, res) {
+function updateUserAvatar(req, res, next) {
   // eslint-disable-next-line max-len
   userModel.findByIdAndUpdate(req.user._id, { avatar: req.body.avatar }, { new: true, runValidators: true, upsert: false })
     .then((user) => {
       if (!user) {
-        return res.status(404).send({ message: 'Пользователь по указанному _id не найден.' });
+        throw new NotFoundError('Пользователь по указанному _id не найден.');
       }
       return res.send({ data: user });
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        return res.status(400).send({ message: err.message });
+        next(new BadRequestError({ message: err.message }));
       }
-      return res.status(500).send({ message: 'Ошибка сервера.' });
+      next(err);
     });
+}
+
+function login(req, res, next) {
+  const { email, password } = req.body;
+  userModel.findUserByCredentials(email, password)
+    .then((user) => {
+      const token = jwt.sign({ _id: user._id }, NODE_ENV === 'production' ? JWT_SECRET : 'super-puper-secret', { expiresIn: '7d' });
+      res.cookie('jwt', token, { maxAge: 3600000 * 24 * 7, httpOnly: true });
+      res.send({ token });
+    })
+    .catch(next);
 }
 
 module.exports = {
@@ -79,4 +111,5 @@ module.exports = {
   createUser,
   updateUser,
   updateUserAvatar,
+  login,
 };
