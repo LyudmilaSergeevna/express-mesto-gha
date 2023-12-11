@@ -5,6 +5,11 @@ const { celebrate, Joi } = require('celebrate');
 const userController = require('../controllers/users');
 
 router.get('/', userController.readAllUsers);
+router.get('/:userId', celebrate({
+  params: Joi.object().keys({
+    userId: Joi.string().alphanum().length(24),
+  }),
+}), userController.readTheUser);
 router.get('/me', celebrate({
   params: Joi.object().keys({
     userId: Joi.string().alphanum().length(24),
@@ -25,7 +30,7 @@ router.patch('/me/avatar', celebrate({
   }),
   body: Joi.object().keys({
     // eslint-disable-next-line no-useless-escape
-    avatar: Joi.string().pattern(/(https?:\/\/)?([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}[^\/\s]+$/i),
+    avatar: Joi.string().pattern(/(^https?:\/\/)?([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}[^\/\s]+$/i),
   }),
 }), userController.updateUserAvatar);
 

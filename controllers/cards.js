@@ -3,6 +3,23 @@ const cardModel = require('../models/card');
 const NotFoundError = require('../errors/NotFoundError');
 const BadRequestError = require('../errors/BadRequestError');
 const UnauthorizedAccessError = require('../errors/UnauthorizedAccessError');
+const ForbiddenError = require('../errors/ForbiddenError');
+
+function readTheCard(req, res, next) {
+  const { cardId } = req.params;
+  return cardModel.findById(cardId)
+    .then((card) => {
+      if (!card) {
+        throw new NotFoundError('Карточка с указанным _id не найдена.');
+      } return res.status(200).send(card);
+    })
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        next(new BadRequestError({ message: err.message }));
+      }
+      next(err);
+    });
+}
 
 function readAllCards(req, res, next) {
   const userId = req.user._id;
@@ -40,10 +57,10 @@ function deleteCard(req, res, next) {
         return cardModel.findByIdAndDelete(cardId)
           // eslint-disable-next-line no-shadow, arrow-body-style
           .then((card) => {
-            return res.status(201).send({ data: card });
+            return res.status(200).send({ data: card });
           });
       }
-      throw new UnauthorizedAccessError('Необходима авторизация.');
+      throw new ForbiddenError('Вы не можете удалять чужие карточки.');
     })
     .catch((err) => {
       if (err.name === 'CastError') {
@@ -94,6 +111,7 @@ function dislikeCard(req, res, next) {
 }
 
 module.exports = {
+  readTheCard,
   readAllCards,
   createCard,
   deleteCard,

@@ -13,9 +13,24 @@ const BadRequestError = require('../errors/BadRequestError');
 const ConflictError = require('../errors/ConflictError');
 const UnauthorizedAccessError = require('../errors/UnauthorizedAccessError');
 
+function readTheUser(req, res, next) {
+  const { userId } = req.params;
+  return userModel.findById(userId)
+    .then((user) => {
+      if (!user) {
+        throw new NotFoundError('Пользователь с указанным _id не найден.');
+      } return res.status(200).send(user);
+    })
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        next(new BadRequestError({ message: err.message }));
+      }
+      next(err);
+    });
+}
+
 function readAllUsers(req, res, next) {
-  const userId = req.user._id;
-  if (!userId) {
+  if (!req.user._id) {
     throw new UnauthorizedAccessError('Необходима авторизация.');
   }
   return userModel.find()
@@ -48,7 +63,7 @@ function createUser(req, res, next) {
       if (validator.isEmail(email) === false) {
         throw new BadRequestError('Указан неверный email.');
       }
-      return res.status(201).send({ data: user });
+      return res.status(201).send({ user: { name, about, avatar, email } });
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
@@ -106,6 +121,7 @@ function login(req, res, next) {
 }
 
 module.exports = {
+  readTheUser,
   readAllUsers,
   readUser,
   createUser,
