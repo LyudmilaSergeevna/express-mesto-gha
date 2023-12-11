@@ -39,8 +39,7 @@ function readAllUsers(req, res, next) {
 }
 
 function readUser(req, res, next) {
-  const userId = req.user._id;
-  return userModel.findById(userId)
+  return userModel.findById(req.user._id)
     .then((user) => {
       if (!user) {
         throw new NotFoundError('Пользователь по указанному _id не найден.');

@@ -5,16 +5,9 @@ const { celebrate, Joi } = require('celebrate');
 const userController = require('../controllers/users');
 
 router.get('/', userController.readAllUsers);
-router.get('/:userId', celebrate({
-  params: Joi.object().keys({
-    userId: Joi.string().alphanum().length(24),
-  }),
-}), userController.readTheUser);
-router.get('/me', celebrate({
-  params: Joi.object().keys({
-    userId: Joi.string().alphanum().length(24),
-  }),
-}), userController.readUser);
+
+router.get('/me', userController.readUser);
+
 router.patch('/me', celebrate({
   params: Joi.object().keys({
     userId: Joi.string().alphanum().length(24),
@@ -24,6 +17,13 @@ router.patch('/me', celebrate({
     about: Joi.string().min(2).max(30),
   }),
 }), userController.updateUser);
+
+router.get('/:userId', celebrate({
+  params: Joi.object().keys({
+    userId: Joi.string().alphanum().length(24),
+  }),
+}), userController.readTheUser);
+
 router.patch('/me/avatar', celebrate({
   params: Joi.object().keys({
     userId: Joi.string().alphanum().length(24),
